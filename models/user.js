@@ -9,11 +9,10 @@ var UserSchema = new mongoose.Schema(
       },
       tokenName:String,
       tokenNum:String,
-      poojaCharge:String,
-      name:String,
+      poojaCharge:Number,
       gender:String,
       age:String,
-      date:Date,
+      date:{type:Date,default:Date.now()},
       paymentMode:String,
       address:String
   },
