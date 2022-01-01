@@ -7,8 +7,8 @@ var UserSchema = new mongoose.Schema(
       required: true,
       minlength: 1
       },
-      tokenName:String,
-      tokenNum:String,
+      tokenName:String,//poojaname
+      tokenNum:String,//001
       poojaCharge:Number,
       gender:String,
       age:String,
