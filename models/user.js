@@ -7,6 +7,11 @@ var UserSchema = new mongoose.Schema(
       required: true,
       minlength: 1
       },
+      poojaId:  {
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Pooja",
+        required:true
+      },
       tokenName:String,//poojaname
       tokenNum:String,//001
       poojaCharge:Number,
