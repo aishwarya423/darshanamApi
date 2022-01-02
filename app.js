@@ -12,7 +12,6 @@ const { Pooja } = require("./models/pooja");
 var db = require("./models/index");
 
 app.use(express.json());
-app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 // app.use(morgan("dev"));
 // app.use(moment());
@@ -21,6 +20,19 @@ app.use((req, res, next) => {
   next();
 });
 
+
+var whitelist = ['http://localhost:3000', 'http://example2.com']
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
+// app.use(cors());
+app.use(cors(corsOptions));
 //Get all pooja details
 app.get("/", async (req, res) => {
 let poojas = await Pooja.find({})
