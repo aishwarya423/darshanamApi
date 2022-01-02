@@ -2,8 +2,8 @@ require("dotenv").config();
 var _ = require("lodash")
 var express = require("express");
 var app = express();
-// const cors = require("cors");
-// const axios = require("axios"); 
+const cors = require("cors");
+const axios = require("axios"); 
 // const morgan = require("morgan");
 // const moment = require("moment");
 
@@ -12,7 +12,7 @@ const { Pooja } = require("./models/pooja");
 var db = require("./models/index");
 
 app.use(express.json());
-// app.use(cors());
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 // app.use(morgan("dev"));
 // app.use(moment());
@@ -77,13 +77,15 @@ app.post("/pooja/delete/:id",async (req,res) =>{
 app.post("/create-token",async (req,res) =>{
   try{
     var pooja = await Pooja.findById(req.body.poojaId)
-    let existingPoojaCount = await Pooja.find({tokenNum:pooja.name}).count() + 1 || 1
     req.body.tokenName = pooja.name
-    req.body.tokenNum = pooja.poojaNum + '-' + existingPoojaCount
-    const newtoken = ({
-      poojaCharge,name,gender,age,date,paymentMode,address
+    req.body.tokenNum = pooja.poojaNum + '-' + (pooja.totalCount + 1)
+    req.body.poojaCharge = pooja.charge
+    const newtoken = ({tokenName,tokenNum,poojaCharge,
+      name,gender,age,date,paymentMode,address,poojaId//need to be sent by frontend
     } = req.body);
     let user = await User.create(newtoken)
+    pooja.totalCount += 1
+    pooja.save()
     return res.status(200).json({message:`Successfully created token for ${name}`,data:user})
   }catch(e){
 console.log(e)
