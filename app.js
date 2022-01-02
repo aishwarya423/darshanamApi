@@ -10,6 +10,7 @@ const axios = require("axios");
 const { User } = require("./models/user");
 const { Pooja } = require("./models/pooja");
 var db = require("./models/index");
+const res = require("express/lib/response");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -24,10 +25,13 @@ app.use((req, res, next) => {
 var whitelist = ['http://localhost:3000', 'http://example2.com']
 var corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (whitelist.indexOf(origin) !== -1 || true) {
+      console.log("inn")
       callback(null, true)
     } else {
-      callback(new Error('Not allowed by CORS'))
+      console.log("in else")
+      // callback(new Error('Not allowed by CORS'))
+      return res.send("Sorry page not found")
     }
   }
 }
@@ -178,6 +182,3 @@ app.listen(process.env.PORT || 3000, () => console.log(`Hello to ${process.env.P
 // // {poojaID(it will be object id which i sent you in list of poojas),poojaCharge,name,gender,age,date,paymentMode,address}
 
 // GET https://darshanam-api.herokuapp.com/report
-
-
-
