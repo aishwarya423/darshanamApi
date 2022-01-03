@@ -108,7 +108,7 @@ console.log(e)
 return res.status(500).json({message:`Internal server error`})
   }
 })
-app.get("/report",async (req,res)=>{
+app.get("/report1",async (req,res)=>{
   try{
 
     let poojaspecificChargesSum = await User.aggregate([
@@ -147,6 +147,52 @@ app.get("/report",async (req,res)=>{
     })
   }
   await namesFunction(names)
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({message:`Internal server error`})
+  }
+})
+
+app.get("/report",async (req,res)=>{
+  try{
+
+    let poojaSpecificDetails = await User.aggregate([
+      {
+        $group:{
+        _id:{poojaId:"$poojaId"},
+        poojaId: {$first:"$_id"},
+        poojaName: {$first:"$tokenName"},
+        tokenSum:{$sum:1},
+        chargeSum : { $sum : "$poojaCharge"}
+      }
+      }
+    ])
+
+    let poojaSpecificDetails1 = await User.aggregate([
+      {
+        $group:{
+        _id:{poojaId:"$poojaId" ,paymentMode :"$paymentMode" },
+        poojaId: {$first:"$_id"},
+        poojaName: {$first:"$tokenName"},
+        paymentMode: {$first:"$paymentMode"},
+        tokenSum:{$sum:1},
+        chargeSum : { $sum : "$poojaCharge"}
+      }
+      }
+    ])
+    poojaSpecificDetails.forEach(i=>{
+      poojaSpecificDetails1.forEach(j=>{
+        // console.log(j.poojaId,i.poojaId,"hii")
+      if(i.poojaName === j.poojaName){
+        i[j.paymentMode] = j.tokenSum
+      } else{
+        i[j.paymentMode] = 0
+      }
+      })
+    })
+    
+    return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails})
+
   }catch(e){
     console.log(e)
     return res.status(500).json({message:`Internal server error`})
