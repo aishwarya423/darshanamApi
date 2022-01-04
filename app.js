@@ -11,6 +11,7 @@ const { User } = require("./models/user");
 const { Pooja } = require("./models/pooja");
 var db = require("./models/index");
 const res = require("express/lib/response");
+const { ObjectID } = require("mongodb");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -108,59 +109,46 @@ console.log(e)
 return res.status(500).json({message:`Internal server error`})
   }
 })
-app.get("/report1",async (req,res)=>{
-  try{
 
-    let poojaspecificChargesSum = await User.aggregate([
+app.get("/report",async (req,res)=>{
+  try{
+    let poojaSpecificDetails = await User.aggregate([
       {
         $group:{
-        _id:{tokenName:"$tokenName"},
-        count:{$sum:1},
-        totPoojaCharge : { $sum : "$poojaCharge"}
+        _id:{poojaId:"$poojaId"},
+        poojaId: {$first:"$poojaId"},
+        poojaName: {$first:"$tokenName"},
+        tokenSum:{$sum:1},
+        chargeSum : { $sum : "$poojaCharge"}
       }
-      }
+    },
+    {$sort: {"createdAt": -1}}
     ])
-    //---------------
-    var names = await Pooja.find({},{name:1,_id:0})
-    var report = []
-  async function namesFunction(names) {
-    names.forEach(async(name)=>{
-    let agg =  await User.aggregate([
-        {
-          $match:{tokenName:name.name}
-        },
-        {
-          $group:{
-            _id:  { paymentMode : "$paymentMode" }, // Group By Expression
-            count: { $sum : 1 },
-            ticketName:{$first:"$tokenName"},
-            totPoojaCharge : { $sum : "$poojaCharge"}
-          }
-        }
-      ])
-      report.push(agg)
-      // console.log(report,"report",report.length,"is rep ength")
-      // console.log(agg)
-      if(report.length == names.length){
-        return res.status(200).json({message:`Successfully fetched`,report:report,poojaspecificChargesSum:poojaspecificChargesSum})
-      }
+    let count = 0
+     poojaSpecificDetails.forEach(async(i)=>{
+       let pid = i.poojaId.toString()
+       i.card  = await User.find({poojaId:pid,paymentMode:'card'}).countDocuments()
+       i.cash = await User.find({poojaId:pid,paymentMode:'cash'}).countDocuments()
+      i.upi = await User.find({poojaId:pid,paymentMode:'upi'}).countDocuments()
+       count++
+       if(count == poojaSpecificDetails.length){
+        return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails})
+       }
     })
-  }
-  await namesFunction(names)
   }catch(e){
     console.log(e)
     return res.status(500).json({message:`Internal server error`})
   }
 })
 
-app.get("/report",async (req,res)=>{
-  try{
 
+app.get("/reportold",async (req,res)=>{
+  try{
     let poojaSpecificDetails = await User.aggregate([
       {
         $group:{
         _id:{poojaId:"$poojaId"},
-        poojaId: {$first:"$_id"},
+        poojaId: {$first:"$poojaId"},
         poojaName: {$first:"$tokenName"},
         tokenSum:{$sum:1},
         chargeSum : { $sum : "$poojaCharge"}
@@ -172,25 +160,24 @@ app.get("/report",async (req,res)=>{
       {
         $group:{
         _id:{poojaId:"$poojaId" ,paymentMode :"$paymentMode" },
-        poojaId: {$first:"$_id"},
+        poojaId: {$first:"$poojaId"},
         poojaName: {$first:"$tokenName"},
         paymentMode: {$first:"$paymentMode"},
         tokenSum:{$sum:1},
-        chargeSum : { $sum : "$poojaCharge"}
       }
       }
     ])
+    // console.log(poojaSpecificDetails1,poojaSpecificDetails1.length,"poojaSpecificDetails1")
     poojaSpecificDetails.forEach(i=>{
       poojaSpecificDetails1.forEach(j=>{
-        // console.log(j.poojaId,i.poojaId,"hii")
-      if(i.poojaName === j.poojaName){
+        console.log(i._id.poojaId , j._id.poojaId ,i._id.poojaId.toString() == j._id.poojaId.toString())
+      if(i._id.poojaId.toString() == j._id.poojaId.toString()){
         i[j.paymentMode] = j.tokenSum
       } else{
         i[j.paymentMode] = 0
       }
       })
     })
-    
     return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails})
 
   }catch(e){
@@ -198,7 +185,6 @@ app.get("/report",async (req,res)=>{
     return res.status(500).json({message:`Internal server error`})
   }
 })
-
 
 app.all('*', (req, res) =>{
   return res.send('Page not found');
