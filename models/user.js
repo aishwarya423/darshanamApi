@@ -12,6 +12,11 @@ var UserSchema = new mongoose.Schema(
         ref: "Pooja",
         required:true
       },
+      empId:  {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+        // required:true
+      },
       tokenName:String,//poojaname
       tokenNum:String,//001
       poojaCharge:Number,

@@ -157,6 +157,52 @@ app.get("/report",async (req,res)=>{
   }
 })
 
+app.get("/report/:type",async (req,res)=>{
+  try{
+    const today = new Date();
+    let yesterday, fromDate
+    if(req.params.type == 'day'){
+       yesterday = today.setDate(today.getDate()-1);
+    }else if(req.params.type== 'week'){
+       yesterday = today.setDate(today.getDate()-7);
+    } else if(req.params.type =='month'){
+      yesterday = today.setDate(today.getMonth()-1);
+    }
+    fromDate = new Date(yesterday)
+    // console.log(fromDate,"n",yesterday,today.setDate(today.getDate()-7))
+    let poojaSpecificDetails = await User.aggregate([
+      {$match:{createdAt:{$gt:fromDate}} },
+      {
+        $group:{
+        _id:{poojaId:"$poojaId"},
+        poojaId: {$first:"$poojaId"},
+        poojaName: {$first:"$tokenName"},
+        tokenSum:{$sum:1},
+        chargeSum : { $sum : "$poojaCharge"}
+      }
+    }
+    ])
+    let count = 0
+     poojaSpecificDetails.forEach(async(i)=>{
+       let pid = i.poojaId.toString()
+       i.card  = await User.find({poojaId:pid,paymentMode:'card',createdAt:{$gt:fromDate}}).countDocuments()
+       i.cash = await User.find({poojaId:pid,paymentMode:'cash',createdAt:{$gt:fromDate}}).countDocuments()
+      i.upi = await User.find({poojaId:pid,paymentMode:'upi',createdAt:{$gt:fromDate}}).countDocuments()
+      i.pooja = await Pooja.findOne({_id:pid},{_id:1,poojaNum:1})
+       count++
+       if(count == poojaSpecificDetails.length){
+        poojaSpecificDetails = _.sortBy(poojaSpecificDetails,
+          [function(o) { return o.pooja.poojaNum; }]);
+        return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails})
+       }
+    })
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({message:`Internal server error`})
+  }
+})
+
+
 
 app.get("/reportold",async (req,res)=>{
   try{
