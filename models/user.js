@@ -8,7 +8,7 @@ var UserSchema = new mongoose.Schema(
       minlength: 1
       },
       poojaId:  {
-        type: mongoose.Schema.Types.ObjectId, 
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Pooja",
         required:true
       },
@@ -19,7 +19,8 @@ var UserSchema = new mongoose.Schema(
       age:String,
       date:{type:Date,default:Date.now()},
       paymentMode:String,
-      address:String
+      address:String,
+      visitors:{type:Number,default:1}
   },
   { timestamps: true }
 );

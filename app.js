@@ -9,9 +9,14 @@ const axios = require("axios");
 
 const { User } = require("./models/user");
 const { Pooja } = require("./models/pooja");
+const errorHandler = require('./middleware/error');
+
 var db = require("./models/index");
 const res = require("express/lib/response");
 const { ObjectID } = require("mongodb");
+
+const adminRoutes = require('./routes/admin');
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,12 +43,16 @@ var corsOptions = {
 }
 // app.use(cors());
 app.use(cors(corsOptions));
+
+app.use('/admin',adminRoutes)
+app.use(errorHandler);
+
 //Get all pooja details
 app.get("/", async (req, res) => {
 let poojas = await Pooja.find({})
   return res.status(200).json({message:"Welcome to darshanamAPI",data:poojas})
 });
-//find single pooja
+
 app.get("/pooja-details/:id",async (req,res) =>{
   try{
     let pooja = await Pooja.findById(req.params.id)
@@ -98,7 +107,11 @@ app.post("/create-token",async (req,res) =>{
     req.body.tokenNum = pooja.poojaNum + '-' + (pooja.totalCount + 1)
     req.body.poojaCharge = pooja.charge
     const newtoken = ({tokenName,tokenNum,poojaCharge,
-      name,gender,age,date,paymentMode,address,poojaId//need to be sent by frontend
+      name,gender//
+      ,age//
+      ,date,paymentMode
+      ,address,//
+      poojaId,visitors  //need to be sent by frontend
     } = req.body);
     let user = await User.create(newtoken)
     pooja.totalCount += 1
@@ -121,8 +134,7 @@ app.get("/report",async (req,res)=>{
         tokenSum:{$sum:1},
         chargeSum : { $sum : "$poojaCharge"}
       }
-    },
-    {$sort: {"createdAt": -1}}
+    }
     ])
     let count = 0
      poojaSpecificDetails.forEach(async(i)=>{
@@ -130,11 +142,15 @@ app.get("/report",async (req,res)=>{
        i.card  = await User.find({poojaId:pid,paymentMode:'card'}).countDocuments()
        i.cash = await User.find({poojaId:pid,paymentMode:'cash'}).countDocuments()
       i.upi = await User.find({poojaId:pid,paymentMode:'upi'}).countDocuments()
+      i.pooja = await Pooja.findOne({_id:pid},{_id:1,poojaNum:1})
        count++
        if(count == poojaSpecificDetails.length){
+        poojaSpecificDetails = _.sortBy(poojaSpecificDetails, 
+          [function(o) { return o.pooja.poojaNum; }]);
         return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails})
        }
     })
+    
   }catch(e){
     console.log(e)
     return res.status(500).json({message:`Internal server error`})
