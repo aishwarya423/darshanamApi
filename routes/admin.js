@@ -6,11 +6,13 @@ const {
 const User = require('../models/user');
 
 const router = express.Router({ mergeParams: true });
+const { protect,authorize } = require('../middleware/auth')
 
-
+router
+  .route('/create-employee')
+  .post(protect, authorize('admin'), createEmployee);
 
 router
   .route('/:id')
   .get(getUser)
-router.post('/create-employee',createEmployee)
 module.exports = router;

@@ -16,7 +16,8 @@ const res = require("express/lib/response");
 const { ObjectID } = require("mongodb");
 
 const adminRoutes = require('./routes/admin');
-
+const authRoutes = require('./routes/auth');
+const employeeRoutes = require('./routes/employee');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -45,7 +46,12 @@ var corsOptions = {
 app.use(cors(corsOptions));
 
 app.use('/admin',adminRoutes)
+app.use('/auth',authRoutes)
+app.use('/emp',employeeRoutes)
+
 app.use(errorHandler);
+
+const { protect } = require('./middleware/auth');
 
 //Get all pooja details
 app.get("/", async (req, res) => {
@@ -62,6 +68,7 @@ app.get("/pooja-details/:id",async (req,res) =>{
     return res.status(500).json({message:`Internal server error`})
   }
 })
+//put only for admin
 app.post("/pooja/create",async (req,res) =>{
   try{
     req.body.poojaNum = await Pooja.find({}).count() + 1 || 1
@@ -97,29 +104,6 @@ app.post("/pooja/delete/:id",async (req,res) =>{
   } catch(e){
     console.log(e)
     return res.status(404).json({ message: "Try again later", response: data });
-  }
-})
-
-app.post("/create-token",async (req,res) =>{
-  try{
-    var pooja = await Pooja.findById(req.body.poojaId)
-    req.body.tokenName = pooja.name
-    req.body.tokenNum = pooja.poojaNum + '-' + (pooja.totalCount + 1)
-    req.body.poojaCharge = pooja.charge
-    const newtoken = ({tokenName,tokenNum,poojaCharge,
-      name,gender//
-      ,age//
-      ,date,paymentMode
-      ,address,//
-      poojaId,visitors  //need to be sent by frontend
-    } = req.body);
-    let user = await User.create(newtoken)
-    pooja.totalCount += 1
-    pooja.save()
-    return res.status(200).json({message:`Successfully created token for ${name}`,data:user})
-  }catch(e){
-console.log(e)
-return res.status(500).json({message:`Internal server error`})
   }
 })
 
@@ -201,6 +185,7 @@ app.get("/report/:type",async (req,res)=>{
     return res.status(500).json({message:`Internal server error`})
   }
 })
+
 
 
 
