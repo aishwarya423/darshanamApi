@@ -40,6 +40,7 @@ exports.report = asyncHandler(async (req, res, next) => {
       }
       ])
       let count = 0
+      let totalGross = 0
       if(poojaSpecificDetails =[]) return res.status(200).json({message:`No report`,data:[]})
        poojaSpecificDetails.forEach(async(i)=>{
          let pid = i.poojaId.toString()
@@ -48,10 +49,11 @@ exports.report = asyncHandler(async (req, res, next) => {
         i.upi = await User.find({poojaId:pid,paymentMode:'upi'}).countDocuments()
         i.pooja = await Pooja.findOne({_id:pid},{_id:1,poojaNum:1})
          count++
+         totalGross += i.chargeSum
          if(count == poojaSpecificDetails.length){
           poojaSpecificDetails = _.sortBy(poojaSpecificDetails, 
             [function(o) { return o.pooja.poojaNum; }]);
-          return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails})
+          return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails,totalGross:totalGross})
          }
       }) 
 }); 
@@ -81,6 +83,7 @@ exports.reportType = asyncHandler(async (req, res, next) => {
     }
     ])
     let count = 0
+    let totalGross = 0
      poojaSpecificDetails.forEach(async(i)=>{
        let pid = i.poojaId.toString()
        i.card  = await User.find({poojaId:pid,paymentMode:'card',createdAt:{$gt:fromDate}}).countDocuments()
@@ -88,10 +91,11 @@ exports.reportType = asyncHandler(async (req, res, next) => {
       i.upi = await User.find({poojaId:pid,paymentMode:'upi',createdAt:{$gt:fromDate}}).countDocuments()
       i.pooja = await Pooja.findOne({_id:pid},{_id:1,poojaNum:1})
        count++
+       totalGross += i.chargeSum
        if(count == poojaSpecificDetails.length){
         poojaSpecificDetails = _.sortBy(poojaSpecificDetails,
           [function(o) { return o.pooja.poojaNum; }]);
-        return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails})
+        return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails , totalGross:totalGross})
        }
     })
 }); 
