@@ -28,6 +28,37 @@ exports.createToken = asyncHandler(async (req, res, next) => {
 }); 
 
 exports.report = asyncHandler(async (req, res, next) => {
+    if(req.user.role == 'employee') {
+      let poojaSpecificDetails = await User.aggregate([
+        {$match:{empId:req.user._id}},
+        {
+          $group:{
+          _id:{poojaId:"$poojaId"},
+          poojaId: {$first:"$poojaId"},
+          poojaName: {$first:"$tokenName"},
+          tokenSum:{$sum:1},
+          chargeSum : { $sum : "$poojaCharge"}
+        }
+      }
+      ])
+      let count = 0
+      let totalGross = 0
+      if(poojaSpecificDetails ==[]) return res.status(200).json({message:`No report`,data:[]})
+       poojaSpecificDetails.forEach(async(i)=>{
+         let pid = i.poojaId.toString()
+         i.card  = await User.find({empId:req.user._id, poojaId:pid,paymentMode:'card'}).countDocuments()
+         i.cash = await User.find({empId:req.user._id , poojaId:pid,paymentMode:'cash'}).countDocuments()
+        i.upi = await User.find({empId:req.user._id, poojaId:pid,paymentMode:'upi'}).countDocuments()
+        i.pooja = await Pooja.findOne({_id:pid},{_id:1,poojaNum:1})
+         count++
+         totalGross += i.chargeSum
+         if(count == poojaSpecificDetails.length){
+          poojaSpecificDetails = _.sortBy(poojaSpecificDetails, 
+            [function(o) { return o.pooja.poojaNum; }]);
+          return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails,totalGross:totalGross})
+         }
+      }) 
+    }else{
     let poojaSpecificDetails = await User.aggregate([
         {
           $group:{
@@ -41,7 +72,7 @@ exports.report = asyncHandler(async (req, res, next) => {
       ])
       let count = 0
       let totalGross = 0
-      if(poojaSpecificDetails =[]) return res.status(200).json({message:`No report`,data:[]})
+      if(poojaSpecificDetails ==[]) return res.status(200).json({message:`No report`,data:[]})
        poojaSpecificDetails.forEach(async(i)=>{
          let pid = i.poojaId.toString()
          i.card  = await User.find({poojaId:pid,paymentMode:'card'}).countDocuments()
@@ -56,19 +87,51 @@ exports.report = asyncHandler(async (req, res, next) => {
           return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails,totalGross:totalGross})
          }
       }) 
+    }
 }); 
 
 exports.reportType = asyncHandler(async (req, res, next) => {
     const today = new Date();
     let yesterday, fromDate
     if(req.params.type == 'day'){
-       yesterday = today.setDate(today.getDate()-1);
-    }else if(req.params.type== 'week'){
-       yesterday = today.setDate(today.getDate()-7);
-    } else if(req.params.type =='month'){
-      yesterday = today.setDate(today.getMonth()-1);
-    }
-    fromDate = new Date(yesterday)
+      yesterday = today.setDate(today.getDate()-1);
+   }else if(req.params.type== 'week'){
+      yesterday = today.setDate(today.getDate()-7);
+   } else if(req.params.type =='month'){
+     yesterday = today.setDate(today.getMonth()-1);
+   }
+   fromDate = new Date(yesterday)
+
+    if(req.user.role == 'employee') {
+   let poojaSpecificDetails = await User.aggregate([
+     {$match:{createdAt:{$gt:fromDate},empId:req.user._id} },
+     {
+       $group:{
+       _id:{poojaId:"$poojaId"},
+       poojaId: {$first:"$poojaId"},
+       poojaName: {$first:"$tokenName"},
+       tokenSum:{$sum:1},
+       chargeSum : { $sum : "$poojaCharge"}
+     }
+   }
+   ])
+   let count = 0
+   let totalGross = 0
+    poojaSpecificDetails.forEach(async(i)=>{
+      let pid = i.poojaId.toString()
+      i.card  = await User.find({empId:req.user._id, poojaId:pid,paymentMode:'card',createdAt:{$gt:fromDate}}).countDocuments()
+      i.cash = await User.find({empId:req.user._id, poojaId:pid,paymentMode:'cash',createdAt:{$gt:fromDate}}).countDocuments()
+     i.upi = await User.find({empId:req.user._id, poojaId:pid,paymentMode:'upi',createdAt:{$gt:fromDate}}).countDocuments()
+     i.pooja = await Pooja.findOne({_id:pid},{_id:1,poojaNum:1})
+      count++
+      totalGross += i.chargeSum
+      if(count == poojaSpecificDetails.length){
+       poojaSpecificDetails = _.sortBy(poojaSpecificDetails,
+         [function(o) { return o.pooja.poojaNum; }]);
+       return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails , totalGross:totalGross})
+      }
+   })
+    }else{
     // console.log(fromDate,"n",yesterday,today.setDate(today.getDate()-7))
     let poojaSpecificDetails = await User.aggregate([
       {$match:{createdAt:{$gt:fromDate}} },
@@ -98,5 +161,6 @@ exports.reportType = asyncHandler(async (req, res, next) => {
         return res.status(200).json({message:`Successfully fetched`,data:poojaSpecificDetails , totalGross:totalGross})
        }
     })
+  }
 }); 
 

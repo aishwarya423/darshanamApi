@@ -9,8 +9,17 @@ var PoojaSchema = new mongoose.Schema(
     },
     charge:Number,
     color:String,
-    poojaNum:{type:Number,default:1},
-    totalCount:{type:Number,default:0}
+    poojaNum:{
+      type:Number,
+      default:1,
+      immutable: true,
+      unique:true
+    },
+    totalCount:{
+      type:Number,
+      default:0,
+      immutable: true
+    }
   },
   { timestamps: true }
 );

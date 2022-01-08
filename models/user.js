@@ -10,15 +10,17 @@ var UserSchema = new mongoose.Schema(
       poojaId:  {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Pooja",
-        required:true
+        required:true,
+        immutable: true
       },
       empId:  {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Employee",
-        required:true
+        required:true,
+        immutable: true
       },
-      tokenName:String,//poojaname
-      tokenNum:String,//001
+      tokenName:{type:String,immutable: true},//poojaname
+      tokenNum:{type:String,immutable: true},//001
       poojaCharge:Number,
       gender:String,
       age:String,

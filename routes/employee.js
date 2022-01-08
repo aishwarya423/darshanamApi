@@ -16,9 +16,9 @@ router
 
 router
   .route('/report')
-  .get(report)
+  .get(protect ,report)
 
 router
   .route('/report/:type')
-  .get(reportType)
+  .get(protect,reportType)
 module.exports = router;

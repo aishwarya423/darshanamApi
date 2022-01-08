@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('./async');
 const ErrorResponse = require('../utils/errorResponse');
-const User = require('../models/employee');
+const Employee = require('../models/employee');
+const { ObjectID, ObjectId } = require('mongodb');
 
 // Protect routes
 exports.protect = asyncHandler(async (req, res, next) => {
@@ -27,9 +28,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
   try {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = await User.findById(decoded.id);
-
+    req.user = await Employee.findOne({_id:ObjectId(decoded.id)});
     next();
   } catch (err) {
     return next(new ErrorResponse('Not authorized to access this route', 401));
