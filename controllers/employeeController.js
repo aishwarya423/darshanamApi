@@ -43,6 +43,8 @@ exports.report = asyncHandler(async (req, res, next) => {
       ])
       let count = 0
       let totalGross = 0
+   console.log(poojaSpecificDetails,"hhhhhhh")
+
       if(poojaSpecificDetails ==[]) return res.status(200).json({message:`No report`,data:[]})
        poojaSpecificDetails.forEach(async(i)=>{
          let pid = i.poojaId.toString()
@@ -117,6 +119,9 @@ exports.reportType = asyncHandler(async (req, res, next) => {
    ])
    let count = 0
    let totalGross = 0
+   console.log(poojaSpecificDetails,"hhhhhhh")
+   if(poojaSpecificDetails ==[]) return res.status(200).json({message:`No report`,data:[]})
+
     poojaSpecificDetails.forEach(async(i)=>{
       let pid = i.poojaId.toString()
       i.card  = await User.find({empId:req.user._id, poojaId:pid,paymentMode:'card',createdAt:{$gt:fromDate}}).countDocuments()

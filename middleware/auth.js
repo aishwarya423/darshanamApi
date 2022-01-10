@@ -8,18 +8,14 @@ const { ObjectID, ObjectId } = require('mongodb');
 exports.protect = asyncHandler(async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     // Set token from Bearer token in header
-    token = req.headers.authorization.split(' ')[1];
-    // Set token from cookie
-  }
-  else if (req.cookies && req.cookies.token) {
+    token = req.headers.authorization.split(' ')[1];// Set token from cookie
+  } else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
+  }else{
+    token =  req.rawHeaders[req.rawHeaders.length-1].split('=')[1]
   }
-
   // Make sure token exists
   if (!token) {
     return next(new ErrorResponse('Not authorized to access this route', 401));
