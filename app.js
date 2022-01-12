@@ -59,6 +59,16 @@ let poojas = await Pooja.find({})
   return res.status(200).json({message:"Welcome to darshanamAPI",data:poojas})
 });
 
+
+app.get("/ticket-details/:id",async (req,res) =>{
+  try{
+    let pooja = await User.findById(req.params.id)
+    return res.status(200).json({message:`Done`,data:pooja})
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({message:`Internal server error`})
+  }
+})
 app.get("/pooja-details/:id",async (req,res) =>{
   try{
     let pooja = await Pooja.findById(req.params.id)
