@@ -27,6 +27,7 @@ var UserSchema = new mongoose.Schema(
       date:{type:Date,default:Date.now()},
       paymentMode:String,
       address:String,
+      phone:String,
       visitors:{type:Number,default:1}
   },
   { timestamps: true }
