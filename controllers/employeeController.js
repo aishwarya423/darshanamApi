@@ -15,7 +15,7 @@ exports.createToken = asyncHandler(async (req, res, next) => {
     req.body.tokenNum = pooja.poojaNum + '-' + (pooja.totalCount + 1)
     req.body.poojaCharge = pooja.charge
     const newtoken = ({tokenName,tokenNum,poojaCharge,
-      name,gender//
+      name,phone//
       ,age//
       ,date,paymentMode
       ,address,//

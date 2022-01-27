@@ -8,6 +8,8 @@ const EmployeeSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a name']
   },
+  lastname:String,
+  dob:Date,
   email: {
     type: String,
     required: [true, 'Please add an email'],
@@ -19,7 +21,7 @@ const EmployeeSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'employee'],
+    enum: ['admin', 'employee','mobileuser'],
     default:'employee'
   },
   password: {

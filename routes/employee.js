@@ -12,7 +12,7 @@ const { protect,authorize } = require('../middleware/auth')
 
 router
   .route('/create-token')
-  .post(protect, authorize('employee','admin'), createToken);
+  .post(protect, authorize('employee','admin','mobileuser'), createToken);
 
 router
   .route('/report')

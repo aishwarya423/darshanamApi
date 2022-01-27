@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+//this user means token which gets generated
 var UserSchema = new mongoose.Schema(
   {
       name: {
