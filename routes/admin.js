@@ -37,4 +37,10 @@ router
 router
   .route('/emps')
   .get(getEmps)
+
+router
+.route('/get-emps')
+.post(getEmps)
+
+
 module.exports = router;
