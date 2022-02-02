@@ -62,7 +62,7 @@ let poojas = await Pooja.find({})
 
 app.get("/ticket-details/:id",async (req,res) =>{
   try{
-    let pooja = await User.findOne().populate('poojaId')
+    let pooja = await User.findById(req.params.id).populate('poojaId')
     return res.status(200).json({message:`Done`,data:pooja})
   }catch(e){
     console.log(e)
