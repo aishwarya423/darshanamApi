@@ -69,6 +69,16 @@ app.get("/ticket-details/:id",async (req,res) =>{
     return res.status(500).json({message:`Internal server error`})
   }
 })
+
+app.get("/all-ticket-details",async (req,res) =>{
+  try{
+    let pooja = await User.find().populate('poojaId')
+    return res.status(200).json({message:`Done`,data:pooja})
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({message:`Internal server error`})
+  }
+})
 app.get("/pooja-details/:id",async (req,res) =>{
   try{
     let pooja = await Pooja.findById(req.params.id)
